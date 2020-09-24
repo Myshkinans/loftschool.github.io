@@ -1,107 +1,91 @@
-/* ДЗ 1 - Функции */
+/* ДЗ 2 - работа с массивами и объектами */
+
+import { SourceMapDevToolPlugin } from 'webpack';
 
 /*
  Задание 1:
 
- 1.1: Добавьте к функции параметр с любым именем
- 1.2: Функция должна возвращать аргумент, переданный ей в качестве параметра
+ Напишите аналог встроенного метода forEach для работы с массивами
+ Посмотрите как работает forEach и повторите это поведение для массива, который будет передан в параметре array
 
  Пример:
-   returnFirstArgument(10) вернет 10
-   returnFirstArgument('привет') вернет `привет`
-
- Другими словами: функция должна возвращать в неизменном виде то, что поступает ей на вход
+   forEach([1, 2, 3], (el) => console.log(el))
  */
-function returnFirstArgument(a) {
-  return a;
+function forEach(array, fn) {
+  for (let i = 0; i < array.length; i++) {
+    fn(array[i], i, array);
+  }
 }
 
 /*
  Задание 2:
 
- 2.1: Функция должна возвращать сумму переданных аргументов
+ Напишите аналог встроенного метода map для работы с массивами
+ Посмотрите как работает map и повторите это поведение для массива, который будет передан в параметре array
 
  Пример:
-   sumWithDefaults(10, 20) вернет 30
-   sumWithDefaults(2, 4) вернет 6
-
- 2.1 *: Значение по умолчанию для второго аргумента должно быть равно 100
-
- Пример:
-   sumWithDefaults(10) вернет 110
+   map([1, 2, 3], (el) => el ** 2) // [1, 4, 9]
  */
-function sumWithDefaults(a, b = 100) {
-  return a + b;
+function map(array, fn) {
+  var neww = [];
+  for (let i = 0; i < array.length; i++) {
+    neww.push(fn(array[i], i, array));
+  }
+  return neww;
 }
 
 /*
  Задание 3:
 
- Функция должна принимать другую функцию и возвращать результат вызова этой функции
+ Напишите аналог встроенного метода reduce для работы с массивами
+ Посмотрите как работает reduce и повторите это поведение для массива, который будет передан в параметре array
 
  Пример:
-   returnFnResult(() => 'привет') вернет 'привет'
+   reduce([1, 2, 3], (all, current) => all + current) // 6
  */
-function returnFnResult(fn) {
-  return fn();
+function reduce(array, fn, initial) {
+  var a;
+  if (initial == null) {
+    a = array[0];
+    for (var i = 1; i < array.length; i++) {
+      a = fn(a, array[i], i, array);
+    }
+  } else {
+    a = initial;
+    for (var i = 0; i < array.length; i++) {
+      a = fn(a, array[i], i, array);
+    }
+  }
+  return a;
 }
 
 /*
  Задание 4:
 
- Функция должна принимать число и возвращать новую функцию (F)
- При вызове функции F, переданное ранее число должно быть увеличено на единицу и возвращено из F
+ Функция должна перебрать все свойства объекта, преобразовать их имена в верхний регистр и вернуть в виде массива
 
  Пример:
-   var f = returnCounter(10);
-
-   console.log(f()); // выведет 11
-   console.log(f()); // выведет 12 
-   console.log(f()); // выведет 13
+   upperProps({ name: 'Сергей', lastName: 'Петров' }) вернет ['NAME', 'LASTNAME']
  */
-function returnCounter(number = 0) {
-  var count = () => ++number;
-  return count;
+function upperProps(obj) {
+  var ar = [];
+  for (var key in obj) {
+    ar.push(key.toUpperCase());
+  }
+  return ar;
 }
-var f = returnCounter();
+
 /*
  Задание 5 *:
 
- Функция должна возвращать все переданные ей аргументы в виде массива
- Количество переданных аргументов заранее неизвестно
+ Функция принимает объект и должна вернуть Proxy для этого объекта
+ Proxy должен перехватывать все попытки записи значений свойств и возводить это значение в квадрат
 
  Пример:
-   returnArgumentsArray(1, 2, 3) вернет [1, 2, 3]
+   const obj = createProxy({});
+   obj.foo = 2;
+   console.log(obj.foo); // 4
  */
-function returnArgumentsArray(...args) {
-  return args;
-}
+function createProxy(obj) {}
 
-/*
- Задание 6 *:
-
- Функция должна принимать другую функцию (F) и некоторое количество дополнительных аргументов
- Функция должна привязать переданные аргументы к функции F и вернуть получившуюся функцию
-
- Пример:
-   function sum(a, b) {
-     return a + b;
-   }
-
-   var newSum = bindFunction(sum, 2, 4);
-
-   console.log(newSum()) выведет 6
- */
-
-function bindFunction(fn, ...args) {
-  return () => fn(...args);
-}
-
-export {
-  returnFirstArgument,
-  sumWithDefaults,
-  returnArgumentsArray,
-  returnFnResult,
-  returnCounter,
-  bindFunction,
-};
+export { forEach, map, reduce, upperProps, createProxy };
