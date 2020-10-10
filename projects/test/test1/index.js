@@ -23,8 +23,6 @@
  Запрещено использовать сторонние библиотеки. Разрешено пользоваться только тем, что встроено в браузер
  */
 
-import './cookie.html';
-
 /*
  app - это контейнер для всех ваших домашних заданий
  Если вы создаете новые html-элементы и добавляете их на страницу, то добавляйте их только в этот контейнер
@@ -33,6 +31,8 @@ import './cookie.html';
    const newDiv = document.createElement('div');
    homeworkContainer.appendChild(newDiv);
  */
+import './cookie.html';
+
 const homeworkContainer = document.querySelector('#homework-container');
 // текстовое поле для фильтрации cookie
 const filterNameInput = homeworkContainer.querySelector('#filter-name-input');
@@ -44,37 +44,83 @@ const addValueInput = homeworkContainer.querySelector('#add-value-input');
 const addButton = homeworkContainer.querySelector('#add-button');
 // таблица со списком cookie
 const listTable = homeworkContainer.querySelector('#list-table tbody');
-//кнопка удалить
-const button = homeworkContainer.querySelector('#delete-button');
 
-const filter = filterNameInput.value;
-let name = addNameInput.value;
-let value = addValueInput.value;
-filterNameInput.addEventListener('input', function () {
-  if (filter) {
-    if (filter.isMatch(name)) {
-      listTable.deleteRow(name);
+const cookieMap = getCookie();
+let filterValue = '';
+updateTable();
+
+function getCookie() {
+  return document.cookie
+    .split(';')
+    .filter(Boolean)
+    .map((cookie) => cookie.match(/^([^=]+)=(.+)/))
+    .reduce((obj, [, name, value]) => {
+      obj.set(name, value);
+      return obj;
+    }, new Map());
+}
+
+function updateTable() {
+  const fragment = document.createDocumentFragment();
+  let total = 0;
+  listTable.innerHTML = '';
+
+  for (const [name, value] of cookieMap) {
+    if (
+      filterValue &&
+      !name.toLowerCase().includes(filterValue.toLowerCase()) &&
+      !value.toLowerCase().includes(filterValue.toLowerCase())
+    ) {
+      continue;
     }
+    total++;
+    const tr = document.createElement('tr');
+    const nameTD = document.createElement('td');
+    const valueTD = document.createElement('td');
+    const removeTD = document.createElement('td');
+    const removeButton = document.createElement('button');
+
+    removeButton.dataset.role = 'remove-cookie';
+    removeButton.dataset.cookieName = name;
+    removeButton.textContent = 'Удалить';
+    nameTD.textContent = name;
+    valueTD.textContent = value;
+    valueTD.classList.add('value');
+    tr.append(nameTD, valueTD, removeTD);
+    removeTD.append(removeButton);
+
+    fragment.append(tr);
   }
+
+  if (total) {
+    listTable.parentNode.classList.remove('hidden');
+    listTable.append(fragment);
+  } else {
+    listTable.parentNode.classList.add('hidden');
+  }
+}
+
+filterNameInput.addEventListener('input', function () {
+  filterValue = this.value;
+  updateTable();
 });
 
 addButton.addEventListener('click', () => {
-  homeworkContainer.cookie = `${name}=${value}`;
-  name = '';
-  value = '';
-  const row = listTable.insertRow(0);
-  const cell1 = row.insertCell(0);
-  const cell2 = row.insertCell(1);
-  const cell3 = row.insertCell(2);
-  const button = homeworkContainer.createElement('BUTTON');
-  button.innerHTML = 'Удалить';
-  cell1.innertext = name;
-  cell2.innertext = value;
-  cell3.innerHTML = button.innerHTML;
+  const name = encodeURIComponent(addNameInput.value.trim());
+  const value = encodeURIComponent(addValueInput.value.trim());
+  if (!name) {
+    return;
+  }
+  document.cookie = `${name}=${value}`;
+  cookieMap.set(name, value);
+  updateTable();
 });
 
-button.addEventListener('click', () => {
-  listTable.deleteRow(name);
+listTable.addEventListener('click', (e) => {
+  const { role, cookieName } = e.target.dataset;
+  if (role === 'remove-cookie') {
+    cookieMap.delete(cookieName);
+    document.cookie = `${cookieName}= deleted; max-age=0`;
+    updateTable();
+  }
 });
-
-listTable.addEventListener('click', (e) => {});
