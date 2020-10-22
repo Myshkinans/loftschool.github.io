@@ -1,15 +1,23 @@
 class GeoReview {
+  address;
+  //reviewId = 0;
+  reviews = [];
+
   constructor() {
     this.formTemplate = document.querySelector('#addFormTemplate').innerHTML;
     this.map = new InteractiveMap('map', this.onClick.bind(this));
     this.map.init().then(this.onInit.bind(this));
   }
   async onInit() {
-    for (let i = 0; i < localStorage.length; i++) {
-      const t = localStorage.key([i]);
-      const d = JSON.parse(localStorage.getItem(t));
-      const coor = d.coords;
-      this.map.createPlacemark(coor);
+    
+    const localS = JSON.parse(localStorage.getItem('map'));
+    console.log(localS);
+    if (localS !== null) {
+      const b = JSON.parse(localStorage.getItem('map'));
+      for (const obj of b) {
+        this.reviews.push(obj);
+        this.map.createPlacemark(obj.coords);
+      }
     }
     document.addEventListener('click', this.onDocumentClick.bind(this));
   }
@@ -19,77 +27,88 @@ class GeoReview {
     root.innerHTML = this.formTemplate;
     const reviewList = root.querySelector('[data-role=review-list]');
     const reviewForm = root.querySelector('[data-role=review-form]');
-    const reviewAdd = root.querySelector('review-add');
+    //const reviewAdd = root.querySelector('review-add');
     reviewForm.dataset.coords = JSON.stringify(coords);
 
-    console.log('координаты:', coords);
+    //const review = {
+    //  reviewId: this.reviewId,
+    //  coords: coords,
+    //  name: name.value,
+    //  place: reviewForm.querySelector('#place').value,
+    //  text: reviewForm.querySelector('#text').value,
+    //};
 
-    // console.log(localStorage.getItem());
-
-    for (let i = 0; i < localStorage.length; i++) {
-      const t = localStorage.key([i]);
-      const d = JSON.parse(localStorage.getItem(t));
-
-      console.log('через инклуд', coords.includes(coords));
-      console.log('сравнение через===', coords === d.coords);
-      console.log('локалкоорд:', coords);
-      const div = document.createElement('div');
-      div.classList.add('review-item');
-      div.innerHTML = `
-        <div>
-            <b>${d.name}</b> [${d.place}]
-        </div>
-        <div>${d.text}</div>`;
-      reviewList.appendChild(div);
+    for (const obj in this.reviews) {
+      //фильтр для показа только тех отзывов, которые имеют одинаковые адрес/координаты
+      if (obj.coords === coords) {
+        const div = document.createElement('div');
+        div.classList.add('review-item');
+        div.innerHTML = `
+          <div>
+              <b>${obj.name}</b> [${obj.place}]
+          </div>
+          <div>${obj.text}</div>`;
+        reviewList.appendChild(div);
+      }
     }
     return root;
   }
   async onClick(coords) {
     this.map.openBalloon(coords);
-    const list = this.localStorage;
     const form = this.createForm(coords);
     this.map.setBalloonContent(form.innerHTML);
   }
-  createNewkey() {
-    return Math.round(Math.random() * 10000000);
+  //так и не работает, я не понимаю как вытащить адрес, возвращает промис
+  getAddress(coords) {
+    return new Promise((resolve, reject) => {
+      ymaps
+        .geocode(coords)
+        .then((response) => resolve(response.geoObjects.get(0).getAddressLine()))
+        .catch((e) => reject(e));
+    });
   }
+  //когда кликаем на кнопку "добавить":
   async onDocumentClick(e) {
-    const storage = localStorage;
-
     if (e.target.dataset.role === 'review-add') {
       const reviewForm = document.querySelector('[data-role=review-form]');
       const coords = JSON.parse(reviewForm.dataset.coords);
+      const adr = this.getAddress(coords);
+      console.log('adr:', adr);
       const data = {
+        // reviewId: this.reviewId,
+        address: adr,
         coords: coords,
         name: reviewForm.querySelector('#name').value,
         place: reviewForm.querySelector('#place').value,
         text: reviewForm.querySelector('#text').value,
       };
-      const strData = JSON.stringify(data);
-      console.log(data.coords);
-      const c = this.createNewkey();
-      storage.setItem(c, strData);
+      //this.reviewId++;
 
-      //var review = JSON.parse(storage.data);
+      this.reviews.push(data);
+      localStorage.setItem('map', JSON.stringify(this.reviews));
+      console.log(localStorage.getItem('map'));
 
       this.map.createPlacemark(coords);
       this.map.closeBalloon();
     }
 
     /*try {
-                console.log(strData);
-                storage.data = strData;
-                console.log(strData);
-                this.map.createPlacemark(coords);
-                this.map.closeBalloon();
-            } catch (e) {
-                const formError = document.querySelector('.form-error');
-               
-            }*/
+                  console.log(strData);
+                  storage.data = strData;
+                  console.log(strData);
+                  this.map.createPlacemark(coords);
+                  this.map.closeBalloon();
+              } catch (e) {
+                  const formError = document.querySelector('.form-error');
+                 
+              }*/
   }
 }
 
 class InteractiveMap {
+  clusterer;
+  mapCenter = [55.75, 37.6];
+
   constructor(mapId, onClick) {
     this.mapId = mapId;
     this.onClick = onClick;
@@ -112,9 +131,17 @@ class InteractiveMap {
   loadYMaps() {
     return new Promise((resolve) => ymaps.ready(resolve));
   }
+  getAddress(coords) {
+    return new Promise((resolve, reject) => {
+      ymaps
+        .geocode(coords)
+        .then((response) => resolve(response.geoObjects.get(0).getAddressLine()))
+        .catch((e) => reject(e));
+    });
+  }
   initMap() {
     this.clusterer = new ymaps.Clusterer({
-      groupByCoordinates: true,
+      groupByCoordinates: false,
       clusterDisableClickZoom: true,
       clucterOpenBalloonOnClick: false,
     });
