@@ -1,6 +1,6 @@
 class GeoReview {
   address;
-  //reviewId = 0;
+  reviewId = 0;
   reviews = [];
 
   constructor() {
@@ -9,9 +9,7 @@ class GeoReview {
     this.map.init().then(this.onInit.bind(this));
   }
   async onInit() {
-    
     const localS = JSON.parse(localStorage.getItem('map'));
-    console.log(localS);
     if (localS !== null) {
       const b = JSON.parse(localStorage.getItem('map'));
       for (const obj of b) {
@@ -27,20 +25,13 @@ class GeoReview {
     root.innerHTML = this.formTemplate;
     const reviewList = root.querySelector('[data-role=review-list]');
     const reviewForm = root.querySelector('[data-role=review-form]');
-    //const reviewAdd = root.querySelector('review-add');
     reviewForm.dataset.coords = JSON.stringify(coords);
 
-    //const review = {
-    //  reviewId: this.reviewId,
-    //  coords: coords,
-    //  name: name.value,
-    //  place: reviewForm.querySelector('#place').value,
-    //  text: reviewForm.querySelector('#text').value,
-    //};
-
-    for (const obj in this.reviews) {
-      //фильтр для показа только тех отзывов, которые имеют одинаковые адрес/координаты
-      if (obj.coords === coords) {
+    for (const obj of this.reviews) {
+      const a = JSON.stringify(obj.address);
+      const b = localStorage.getItem('address');
+      //фильтр для показа только тех отзывов, которые имеют одинаковые адрес
+      if (a === b) {
         const div = document.createElement('div');
         div.classList.add('review-item');
         div.innerHTML = `
@@ -54,12 +45,13 @@ class GeoReview {
     return root;
   }
   async onClick(coords) {
+    const adr = await this.getAddress(coords);
+    localStorage.setItem('address', JSON.stringify(adr));
     this.map.openBalloon(coords);
     const form = this.createForm(coords);
     this.map.setBalloonContent(form.innerHTML);
   }
-  //так и не работает, я не понимаю как вытащить адрес, возвращает промис
-  getAddress(coords) {
+  async getAddress(coords) {
     return new Promise((resolve, reject) => {
       ymaps
         .geocode(coords)
@@ -72,21 +64,19 @@ class GeoReview {
     if (e.target.dataset.role === 'review-add') {
       const reviewForm = document.querySelector('[data-role=review-form]');
       const coords = JSON.parse(reviewForm.dataset.coords);
-      const adr = this.getAddress(coords);
-      console.log('adr:', adr);
+      const adr = await this.getAddress(coords);
       const data = {
-        // reviewId: this.reviewId,
+        reviewId: this.reviewId,
         address: adr,
         coords: coords,
         name: reviewForm.querySelector('#name').value,
         place: reviewForm.querySelector('#place').value,
         text: reviewForm.querySelector('#text').value,
       };
-      //this.reviewId++;
+      this.reviewId++;
 
       this.reviews.push(data);
       localStorage.setItem('map', JSON.stringify(this.reviews));
-      console.log(localStorage.getItem('map'));
 
       this.map.createPlacemark(coords);
       this.map.closeBalloon();
@@ -143,8 +133,22 @@ class InteractiveMap {
     this.clusterer = new ymaps.Clusterer({
       groupByCoordinates: false,
       clusterDisableClickZoom: true,
-      clucterOpenBalloonOnClick: false,
+      clucterOpenBalloonOnClick: true,
+      clusterHideIconOnBalloonOpen: false,
     });
+    // const objectManager = new ymaps.ObjectManager({
+    //   clusterize: true,
+    // Опции кластеров задаются с префиксом 'cluster'.
+    //   clusterHasBalloon: false,
+    // Опции геообъектов задаются с префиксом 'geoObject'.
+    ///   geoObjectOpenBalloonOnClick: false,
+    // });
+
+    // objectManager.objects.events.add('click', function (e) {
+    //var objectId = e.get('objectId');
+    //  objectManager.objects.balloon.open(objectId);
+    // });
+
     this.clusterer.events.add('click', (e) => {
       const coords = e.get('target').geometry.getCoordinates();
       this.onClick(coords);
@@ -158,6 +162,7 @@ class InteractiveMap {
     this.map.events.add('click', (e) => this.onClick(e.get('coords')));
     this.map.geoObjects.add(this.clusterer);
   }
+
   openBalloon(coords, content) {
     this.map.balloon.open(coords, content);
   }
