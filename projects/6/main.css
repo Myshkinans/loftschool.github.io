@@ -1,0 +1,107 @@
+body, html {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#log {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+    width: 40%;
+    height: 50%;    
+}
+
+#loginText {
+    width: 30%;
+    border-radius: 3px;
+    border-width: 1px;
+}
+
+#log {
+    background-color: aquamarine;
+    border-radius: 5px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+
+#sendForm {
+    width: 30%;
+    margin-top: 10px;
+    border-color: springgreen;
+    border-radius: 3px;
+}
+
+.left {
+    background-color: aquamarine;
+    border-color: springgreen;
+    flex-grow: 1;
+    max-width: 320px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+.right {
+    display: flex;
+    border-color:aquamarine;
+    flex-grow: 1;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.user {
+    margin-bottom: 20px;
+    display: flex;
+    position: relative;
+    align-items: center; 
+}
+.name {
+    font-weight: bold;
+}
+.photo {
+    margin-right: 15px;
+    background: url(./no.gif);
+    background-size: cover;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+}
+
+.users {
+    position: relative;
+    top: 10px;
+    font-weight: bold;
+}
+
+.input {
+    margin-top: 15px;
+    display: inline-flexbox;
+    align-items: center;
+}
+#but {
+    border-radius: 5px;
+}
+#mes {
+    height: 25px;
+    border-radius: 5px;
+    flex-grow: 1;
+}
+#Chat {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    
+}
+.mContainer {
+    flex-grow: 1;
+    overflow: auto;
+}
