@@ -1,0 +1,28 @@
+{
+  "users": [
+    {
+      "userName": "test",
+      "image": "file:///C:/Users/Home/Loftschool/projects/6/i.jpg"
+    },
+    {
+      "userName": "t",
+      "image": "file:///C:/Users/Home/Loftschool/projects/6/images.jpg"
+    },
+    {
+      "userName": "new",
+      "image": "file:///C:/Users/Home/Loftschool/projects/6/images.jpg"
+    },
+    {
+      "userName": "nata",
+      "image": "file:///C:/Users/Home/Loftschool/projects/6/images.jpg"
+    },
+    {
+      "userName": "123",
+      "image": "file:///C:/Users/Home/Loftschool/projects/6/i.jpg"
+    },
+    {
+      "userName": "ferer",
+      "image": "./no.gif"
+    }
+  ]
+}
