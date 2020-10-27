@@ -12,21 +12,29 @@ const db = low(adapter);
 webSocketConfig.on('connection', function (wsParams) {
   wsParams.on('message', function (data, all = false) {
     const message = JSON.parse(data);
-    clients.push(message.message);
-    console.log(clients);
+    if (message.id) {clients.push({
+      id: message.id,
+      status: 'online',
+      image: message.image
+    })};
+
     webSocketConfig.connections.forEach((wsParams) => {
       switch (message.type) {
         case 'login':
+          wsParams.id = message.id;
           const id = uuidv1();
           const response = {
             type: 'login',
-            responseBody: message.message,
+            responseBody: message.id,
             id: id,
-            clients: clients
+            clients: clients,
+            status: 'online',
+            image: message.image
           }
+        
           wsParams.send(JSON.stringify(response));
-          if (!db.hasIn(message.message)) {   
-            db.get('users').push({userName: message.message }).write();
+          if (!db.hasIn(message.id)) {   
+            db.get('users').push({id: id, userName: message.id }).write();
           }; 
         break;
 
@@ -34,7 +42,8 @@ webSocketConfig.on('connection', function (wsParams) {
           const mes = {
             type: 'text',
             responseBody: message.message,
-            name: wsParams.id
+            name: message.name,
+            image: message.image
           };
           wsParams.send(JSON.stringify(mes));
           break;
@@ -42,9 +51,26 @@ webSocketConfig.on('connection', function (wsParams) {
         case 'close':
           const close = {
             type: 'close',
-            responseBody: message.message
+            responseBody: message.name + message.message
           };
+           
           wsParams.send(JSON.stringify(close));
+          break;
+
+        case 'change':
+          const change = {
+            type: 'change',
+            name: message.name,
+            image: message.imge,
+            client: clients
+          }
+          for (var key of clients) {
+            if (key.id === message.name){
+              key.image = message.imge;
+            }
+          }
+          wsParams.send(JSON.stringify(change));
+          
           break;
       }
     });
