@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" href="./main.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div id="log" class="hidden">
+    <input type="text" id="loginText" placeholder="Введите ник">
+    <button id="sendForm"> Login</button>
+</div>
+<div id="Chat" class="hidden">
+  <div class="left">
+      <div id="curuser" class="user">
+          <img id="photo">
+          <div id="name"></div>
+      </div>
+
+      <div class="users">
+          <h4>ОНЛАЙН ПОЛЬЗОВАТЕЛИ:</h4>
+          <div id="us"></div>
+      </div>
+  </div>
+  <div class="right">
+      <div class="mContainer" id="cont"></div>
+      <div class="input">
+          <input id="mes" type="text" placeholder="Введите текст сообщения" size="100%">
+          <button id="but">Отправить</button>
+      </div>
+  </div>
+</div>
+<script src="client.js"></script>
+<script type="text/javascript" src="dbb.json></script>
+</body>
+</html>
